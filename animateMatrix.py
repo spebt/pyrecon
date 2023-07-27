@@ -32,8 +32,8 @@ cbar=fig.colorbar(imshow_obj)
 ax.grid(color='b', linestyle='-', linewidth=1)
 xl=ax.set_xlabel("Image Voxel x")
 yl=ax.set_ylabel("Image Voxel y")
-ax.set_xlim(0,89)
-ax.set_ylim(0,89)
+ax.set_xlim(0,NImgX_-1)
+ax.set_ylim(0,NImgY_-1)
 plt.tight_layout()
 
 
