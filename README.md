@@ -7,8 +7,3 @@ Activate virtual environment if any and install dependencies using `pip install 
 File -> "image-reconstruction/input/sysmat_8layer_Rot_0_of_1_2mmslitin10mm_1010_idxT0_numT1in1mm_IZ0_DZ0_100.sysmat"
 Matrix dimensions -> 90 x 90 x 32 x6 x 8 (NImgX_ x NImgY_ x NDetY_ x NModule_ x NDetX_ )
 
-## Input Phantom:<br>
-<img src="./output/phantom-circle-img.png" style="height:300px;"/>
-
-## Reconstructed Image:<br>
-<img src="./output/output-reconstruction-circle.png"  style="height:300px;"/>
