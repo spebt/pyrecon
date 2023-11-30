@@ -1,0 +1,11 @@
+# A configuration file for the MLEM-MPI.py execution
+NImgX: 180
+NImgY: 180
+NDetY: 32
+NModule: 6
+NDetX: 8
+system matrix bin files folder: /home/fanghan/Work/SPEBT/code-test/python-test/test1
+N input files: 50
+matrix N-divide: 1 
+phantom file: contrast-phantom-nobg.npz
+out npz filename: recon-out-iter-20.npz
