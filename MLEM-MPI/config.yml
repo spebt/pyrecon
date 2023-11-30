@@ -7,5 +7,7 @@ NDetX: 8
 system matrix bin files folder: /home/fanghan/Work/SPEBT/code-test/python-test/test1
 N input files: 50
 matrix N-divide: 1 
+N iterations: 2000
+reconstruction storage scale factor: 10
 phantom file: contrast-phantom-nobg.npz
 out npz filename: recon-out-iter-20.npz

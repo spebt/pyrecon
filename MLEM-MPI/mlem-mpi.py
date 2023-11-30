@@ -67,8 +67,8 @@ comm.Reduce([matrixSumProc, MPI.DOUBLE], [
             norm, MPI.DOUBLE], op=MPI.SUM, root=0)
 comm.Barrier()
 
-nIteration = 20
-scale = 10
+nIteration = configs['N iterations']
+scale = configs['reconstruction storage scale factor']
 if rank == 0:
     # print(np.all(norm))
     thisInfo = 'Normalization shape: %s\n' % str(norm.shape)
