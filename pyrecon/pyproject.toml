@@ -1,0 +1,13 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+dependencies = ["numpy", "mpi4py"]
+name = "pyrecon"
+version = "0.0.1"
+authors = [{ name = "Fang Han", email = "fhan0904@gmail.com" }]
+requires-python = ">=3.9.6"
+
+[tool.setuptools.packages]
+find = {} # Scan the project directory with the default parameters
