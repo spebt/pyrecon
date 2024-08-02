@@ -13,6 +13,7 @@ with the code, and a sphinx-generated HTML website
 `spebt pyrecon <https://spebt.github.io/pyrecon>`_.
 """
 
-from proj import *
-
+import pyrecon.projector as projector
+import pyrecon.reconstruct_mlem as reconstruct_mlem
 __version__ = '0.0.1'
+__all__ = ['projector', 'reconstruct_mlem']
