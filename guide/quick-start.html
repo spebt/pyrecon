@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Quick Start &#8212; PyRecon 0.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="../_static/basic.css?v=c058f7c8" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css?v=27fed22d" />
+    <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="pyrecon" href="../modules/index.html" />
+    <link rel="prev" title="User Guide" href="index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+              <div class="related top">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="index.html" title="Previous document">User Guide</a>
+        </li>
+        <li>
+          <a href="../modules/index.html" title="Next document">pyrecon</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+
+          <div class="body" role="main">
+            
+  <section id="quick-start">
+<h1>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">¶</a></h1>
+<section id="on-your-desktop-laptop-without-paralell-hdf5-library">
+<h2>On your desktop/laptop without paralell HDF5 library<a class="headerlink" href="#on-your-desktop-laptop-without-paralell-hdf5-library" title="Link to this heading">¶</a></h2>
+<section id="install-dependencies">
+<h3>Install Dependencies<a class="headerlink" href="#install-dependencies" title="Link to this heading">¶</a></h3>
+<section id="with-pipenv">
+<h4>With <code class="docutils literal notranslate"><span class="pre">pipenv</span></code><a class="headerlink" href="#with-pipenv" title="Link to this heading">¶</a></h4>
+<p>This is supposed to be the simpliest. Run following command:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pipenv<span class="w"> </span>install
+pipenv<span class="w"> </span>shell
+</pre></div>
+</div>
+</section>
+</section>
+<section id="run-the-test-scripts">
+<h3>Run the test scripts<a class="headerlink" href="#run-the-test-scripts" title="Link to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Create a fake system matrix and store in hdf5 format.</p></li>
+</ol>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>dev/generate_sysmat_hdf5.py
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Create the projection of the hotrod(derenzo) phantom.</p></li>
+</ol>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>pyrecon/tests/test_projection_nonmpi.py
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Reconstruct from the newly-created projection.</p></li>
+</ol>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>pyrecon/tests/test_recon_nonmpi.py
+</pre></div>
+</div>
+</section>
+<section id="visulization-jupyter-notebooks">
+<h3>Visulization Jupyter notebooks<a class="headerlink" href="#visulization-jupyter-notebooks" title="Link to this heading">¶</a></h3>
+<p>There are three <a class="reference external" href="https://docs.jupyter.org/en/latest/">Jupyter notebooks</a> in <code class="docutils literal notranslate"><span class="pre">/dev</span></code> folder.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">read_sysmat_npz.ipynb</span></code>
+plots the system matrix</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">read_projection_npz.ipynb</span></code>
+plots the projection as a sinogram</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">read_reconstructed_npz.ipynb</span></code>
+plots the reconstructed image</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+          </div>
+              <div class="related bottom">
+                &nbsp;
+  <nav id="rellinks">
+    <ul>
+        <li>
+          &larr;
+          <a href="index.html" title="Previous document">User Guide</a>
+        </li>
+        <li>
+          <a href="../modules/index.html" title="Next document">pyrecon</a>
+          &rarr;
+        </li>
+    </ul>
+  </nav>
+              </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">PyRecon</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=spebt&repo=pyrecon&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">User Guide</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Quick Start</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/index.html">Modules</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">User Guide</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">User Guide</a></li>
+      <li>Next: <a href="../modules/index.html" title="next chapter">pyrecon</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Fang Han.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.0.2</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="../_sources/guide/quick-start.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
