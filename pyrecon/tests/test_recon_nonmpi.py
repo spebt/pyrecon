@@ -4,9 +4,17 @@ import h5py
 
 top_dir = str(pathlib.Path(__file__).parents[2])
 sys.path.append(top_dir)
-import pyrecon.reconstruct_mlem as reconstruct_mlem
-
+import pyrecon.mlem as mlem
 if __name__ == "__main__":
+    # Get number of iterations
+   
+    niter = input("Number of iterations:")
+    try:
+        niter = int(niter)
+    except ValueError:
+        print("Invalid input")
+        sys.exit(1)
+
     # Load system matrix
     with h5py.File(top_dir + "/data/" + "test_sysmat.hdf5", "r") as f:
         data = f['sysmat']
@@ -15,8 +23,8 @@ if __name__ == "__main__":
             "projection"
         ]
         # Perform reconstruction
-        out = reconstruct_mlem.reconstruct_mlem(data, proj, 10)
+        out = mlem.reconstruct(data, proj, niter)
         numpy.savez_compressed(
-            top_dir + "/data/" + "hotrod_phantom_data_180x180_reconstruction.npz",
+            top_dir + "/data/" + "hotrod_phantom_data_180x180_reconstructed.npz",
             reconstructed=out,
         )

@@ -6,12 +6,16 @@ PyRecon is a *Python Library for Image Reconstruction* for the SPEBT project. It
 
 - MPI parallelization for MLEM
 
+
+
 .. toctree::
    :hidden:
    :maxdepth: 2
    :caption: Table of Contents:
 
-   API Reference <api-ref.rst>
+   self
+   User Guide <guide/index.rst>
+   Modules <modules/index.rst>
 
 Dependencies
 ------------
@@ -21,4 +25,12 @@ Dependencies
 
 - h5py 3.4.0 or higher
 
+- matplotlib 3.9.0 or higher
+
+- scikit-image 0.24.0 or higher
+
+- jupyterlab 4.2.4 or higher
+
 - mpi4py 3.1.0 or higher (optional)
+
+   

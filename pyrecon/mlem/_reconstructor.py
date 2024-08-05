@@ -1,14 +1,8 @@
 import numpy
+from ._projector import get_backward_projection
+from rich.progress import track
 
-try:
-    import pyrecon.projector_mpi as projector_mpi
-except ImportError:
-    print("MPI is not available. Using non-parallel version.")
-
-import pyrecon.projector as projector
-
-
-def reconstruct_mlem(
+def reconstruct(
     m: numpy.ndarray, proj: numpy.ndarray, niter: int
 ) -> numpy.ndarray:
     """
@@ -30,7 +24,7 @@ def reconstruct_mlem(
     )
     out = numpy.ones(sysmat.shape[1])
     proj = proj.flatten()
-    for i in range(niter):
+    for i in track(range(niter), description="Reconstructing"):
         # print(out.shape)
-        out = projector.get_backward_projection_mlem(sysmat, out, proj)
+        out = get_backward_projection(sysmat, out, proj)
     return out

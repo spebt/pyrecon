@@ -24,7 +24,7 @@ def get_forward_projection(
     return out
 
 
-def get_backward_projection_mlem(
+def get_backward_projection(
     m: numpy.ndarray,
     prev: numpy.ndarray,
     proj: numpy.ndarray,
@@ -48,6 +48,28 @@ def get_backward_projection_mlem(
     msum = numpy.sum(m, axis=0)
     if numpy.any(msum == 0):
         print("Error: Division by zero")
-    out = numpy.matmul(quotient, m) /  msum * prev
-    print(msum.shape,out.shape)
+    out = numpy.matmul(quotient, m) / msum * prev
     return out
+
+
+def get_backward_projection_mpi(proj: numpy.ndarray, m: numpy.ndarray) -> numpy.ndarray:
+    """
+    Perform backword projection with MLEM algorithm, with MPI.
+    This function will back project the projection with the system matrix to image space.
+
+    Parameters
+    ----------
+    proj: numpy.ndarray
+    m: numpy.ndarray
+
+    Returns
+    -------
+    out: numpy.ndarray
+    """
+    try:
+        from mpi4py import MPI
+    except ImportError:
+        print("MPI not found. Using non-MPI version\n")
+        return get_backward_projection(proj, m)
+    out = numpy.matmul(numpy.linalg.pinv(m), proj)
+    return out   

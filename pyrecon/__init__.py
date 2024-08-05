@@ -2,9 +2,12 @@
 PyRecon
 =======
 Provides
-    1. Forward projection
-    2. Backward projection
-    3. Image reconstruction
+  
+  1. MLEM reconstruction algorithm
+  
+    1. Forward and backward projector, MPI and non-MPI versions
+            
+    2. Reconstructor, MPI and non-MPI versions
 
 How to use the documentation
 ----------------------------
@@ -13,7 +16,6 @@ with the code, and a sphinx-generated HTML website
 `spebt pyrecon <https://spebt.github.io/pyrecon>`_.
 """
 
-import pyrecon.projector as projector
-import pyrecon.reconstruct_mlem as reconstruct_mlem
-__version__ = '0.0.1'
-__all__ = ['projector', 'reconstruct_mlem']
+import pyrecon.mlem as mlem
+__version__ = '0.0.2'
+__all__ = ['mlem']
