@@ -1,7 +1,5 @@
-import numpy as np
+import numpy
 import pathlib, sys
-
-# import matplotlib.pyplot as plt
 import h5py
 
 top_dir = str(pathlib.Path(__file__).parents[2])
@@ -13,10 +11,12 @@ if __name__ == "__main__":
     with h5py.File(top_dir + "/data/" + "test_sysmat.hdf5", "r") as f:
         data = f['sysmat']
         # Load projection data
-        proj = np.load(top_dir + "/data/hotrod_phantom_data_180x180_projection.npz")[
+        proj = numpy.load(top_dir + "/data/hotrod_phantom_data_180x180_projection.npz")[
             "projection"
         ]
         # Perform reconstruction
         out = reconstruct_mlem.reconstruct_mlem(data, proj, 10)
-    # Save the reconstructed image
-    # np.savez(top_dir / "data" / "recon.npz", recon=out)
+        numpy.savez_compressed(
+            top_dir + "/data/" + "hotrod_phantom_data_180x180_reconstruction.npz",
+            reconstructed=out,
+        )

@@ -46,7 +46,7 @@ def get_backward_projection_mlem(
     prevproj = get_forward_projection(m, prev)
     quotient = proj / prevproj
     msum = numpy.sum(m, axis=0)
-    if msum == 0:
+    if numpy.any(msum == 0):
         print("Error: Division by zero")
     out = numpy.matmul(quotient, m) /  msum * prev
     print(msum.shape,out.shape)

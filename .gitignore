@@ -131,3 +131,6 @@ dmypy.json
 *.mp4
 # recon output
 output
+
+# hdf5 files in data
+data/*.hdf5

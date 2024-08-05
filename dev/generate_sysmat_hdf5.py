@@ -12,9 +12,9 @@ def get_rotated_coords(xys, theta, center):
     return np.matmul(mr, xy_trans.T).T + center
 
 
-start_w = 4 
-end_w = 8
-xcs = np.linspace(10, 170, 10)
+start_w = 20 
+end_w = 40
+xcs = np.linspace(5, 175, 32)
 # generate polygon vertices
 polys = np.asarray(
     [
@@ -31,7 +31,7 @@ polys = np.asarray(
 )
 
 # create output file with h5py
-N_angles = 12
+N_angles = 40
 with h5py.File(str(top_dir)+"/data/test_sysmat.hdf5", "w") as f:
     dset = f.create_dataset("sysmat", (N_angles, polys.shape[0], 180, 180), dtype=np.float64)
     # Create fake strips
