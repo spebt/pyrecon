@@ -1,21 +1,56 @@
-# How to run on the CCR HPC cluster
-## Through SSH
-  - ```ssh``` to ```vortex.ccr.buffalo.edu```
-  - ```git clone``` the repository
-  - ```cd image-reconstruction/MLEM-MPI```
-  - submit the job with ```sbatch slurm-run.sh```
-## Through UB CCR OnDemand
-  - Login to the OnDemand
-  - Open a command-line shell from the OnDemand dashboard (ccrsoft/legacy should be loaded automaticlly)
-    
-  ![ondemand-shell](https://github.com/UB-SPEBT/image-reconstruction/assets/48816609/9081346d-a3c5-4f28-bf2e-4d87beabe52a)
+# SPEBT Pyrecon
 
-  - ```git clone``` the repository
-  - ```cd image-reconstruction/MLEM-MPI```
-  - submit the job with ```sbatch slurm-run.sh```
+Image reconstruction package for SPEBT project.
 
-## The reconstruction configuration
-The configuration is loaded from the ```config.yml``` file. You can change it for your need.
- (but do not push your change to the remote repository, unless necessary) 
+Features:
+
+- Numpy-based MLEM reconstruction algorithm
+- Independent MPI-based reconstrucion APIs and non-MPI-based APIs
+- Example running scripts in `pyrecon/tests` folder
+
+## Installation
+
+### Install the dependencies
+
+On you desktop/laptop without MPI, you can install by:
+```sh
+pip install -r requirements.txt
+```
 
 
+## Usage
+
+Here's a simple example of how to use Pyrecon:
+
+```python
+import numpy
+import pathlib, sys
+import h5py
+
+top_dir = str(pathlib.Path(__file__).parents[2])
+sys.path.append(top_dir)
+import pyrecon.reconstruct_mlem as reconstruct_mlem
+
+if __name__ == "__main__":
+    # Load system matrix
+    with h5py.File(top_dir + "/data/" + "test_sysmat.hdf5", "r") as f:
+        data = f['sysmat']
+        # Load projection data
+        proj = numpy.load(top_dir + "/data/hotrod_phantom_data_180x180_projection.npz")[
+            "projection"
+        ]
+        # Perform reconstruction
+        out = reconstruct_mlem.reconstruct_mlem(data, proj, 10)
+        numpy.savez_compressed(
+            top_dir + "/data/" + "hotrod_phantom_data_180x180_reconstruction.npz",
+            reconstructed=out,
+        )
+```
+
+## Documentation
+
+For detailed documentation and examples, please refer to the [Pyrecon Documentation](https://spebt.github.io/pyrecon).
+
+## License
+
+Pyrecon is licensed under the [MIT License](https://opensource.org/licenses/MIT).
