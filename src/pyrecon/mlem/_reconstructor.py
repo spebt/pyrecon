@@ -19,9 +19,7 @@ def reconstruct(
     -------
     out: numpy.ndarray
     """
-    sysmat = numpy.reshape(
-        m, (int(numpy.prod(m.shape[0:-2])), int(m.shape[-1] * m.shape[-2]))
-    )
+    sysmat = m
     out = numpy.ones(sysmat.shape[1])
     proj = proj.flatten()
     for i in track(range(niter), description="Reconstructing"):
