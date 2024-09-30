@@ -16,6 +16,7 @@ with the code, and a sphinx-generated HTML website
 `spebt pyrecon <https://spebt.github.io/pyrecon>`_.
 """
 
-import pyrecon.mlem as mlem
-__version__ = '0.0.2'
-__all__ = ['mlem']
+from . import mlem as mlem
+
+__version__ = "0.0.2"
+__all__ = ["mlem"]

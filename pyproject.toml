@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+authors = [{ name = "Fang Han", email = "fhan0904@gmail.com" }]
+dependencies = ["numpy", "rich", "mpi4py", "h5py", "pyyaml", "jsonschema"]
+name = "pyrecon"
+dynamic = ["version"]
+description = "SPEBT project, a Python package for image reconstruction"
+readme = { file = "README.md", content-type = "text/markdow" }
+requires-python = ">=3.9.6"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+
+[tool.setuptools_scm]
+
+[project.urls]
+Homepage = "https://github.com/spebt/pyrecon/"
+Issues = "https://github.com/spebt/pyrecon/issues"
+Documentation = "https://spebt.github.io/pyrecon/"
+
+[tool.setuptools]
+include-package-data = true
+package-dir = {""="src"}
+
