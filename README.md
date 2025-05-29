@@ -1,56 +1,43 @@
-# SPEBT Pyrecon
+# PyRecon
 
-Image reconstruction package for SPEBT project.
+PyRecon is a Python-based library for image reconstruction algorithms, designed for medical imaging and computational tomography applications. It includes implementations of various reconstruction techniques such as MLEM, OSEM, and tools for generating projections and matrices.
 
-Features:
+## Features
 
-- Numpy-based MLEM reconstruction algorithm
-- Independent MPI-based reconstrucion APIs and non-MPI-based APIs
-- Example running scripts in `pyrecon/tests` folder
+- Matrix concatenation utilities.
+- Downsampling and SRM processing.
+- Fake projection generation.
+- MLEM and OSEM reconstruction algorithms (non-MPI and PyTorch versions).
+
+> [!NOTE]
+> Do not use the phantom generation scripts in the `code/` directory as they are not functional. Instead, create phantom using the `digital_phantom` module, which is hosted in a separate repository.
 
 ## Installation
 
-### Install the dependencies
+1. Clone the repository:
 
-On you desktop/laptop without MPI, you can install by:
-```sh
-pip install -r requirements.txt
-```
+   ```bash
+   git clone https://github.com/spebt/pyrecon.git
+   ```
 
+2. Navigate to the project directory:
 
-## Usage
+   ```bash
+   cd pyrecon
+   ```
 
-Here's a simple example of how to use Pyrecon:
+3. Install the required dependencies:
 
-```python
-import numpy
-import pathlib, sys
-import h5py
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-top_dir = str(pathlib.Path(__file__).parents[2])
-sys.path.append(top_dir)
-import pyrecon.reconstruct_mlem as reconstruct_mlem
+## OSEM reconstruction
 
-if __name__ == "__main__":
-    # Load system matrix
-    with h5py.File(top_dir + "/data/" + "test_sysmat.hdf5", "r") as f:
-        data = f['sysmat']
-        # Load projection data
-        proj = numpy.load(top_dir + "/data/hotrod_phantom_data_180x180_projection.npz")[
-            "projection"
-        ]
-        # Perform reconstruction
-        out = reconstruct_mlem.reconstruct_mlem(data, proj, 10)
-        numpy.savez_compressed(
-            top_dir + "/data/" + "hotrod_phantom_data_180x180_reconstruction.npz",
-            reconstructed=out,
-        )
-```
+Look specifically at the `osem_torch_nonmpi.py`
 
-## Documentation
-
-For detailed documentation and examples, please refer to the [Pyrecon Documentation](https://spebt.github.io/pyrecon).
+It will not be trivial to run it. As the data preparation is not automatically done.
 
 ## License
 
-Pyrecon is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
