@@ -134,3 +134,6 @@ output
 
 # hdf5 files in data
 data/*.hdf5
+
+*.out
+*.err
