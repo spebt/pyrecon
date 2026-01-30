@@ -16,7 +16,7 @@ def get_detector_count(layout_file: str) -> int:
         raise FileNotFoundError(f"Layout file not found for detector counting: {layout_file}")
     
     # Load the .tensor file
-    layout_data = torch.load(layout_file, map_location="cpu")
+    layout_data = torch.load(layout_file, map_location="cpu", weights_only=False)
     
     # Grab the first available position to count detectors
     first_pos_key = list(layout_data["layouts"].keys())[0]
@@ -39,7 +39,7 @@ def main():
     # --- Dynamic Geometry Setup ---
     # We use the original .tensor file path from your paths config
     # You might need to add 'base_layout_path' to your config or use a relative path
-    layout_path = cfg['paths'].get('base_layout_path', '../data/scanner_layouts/mph_hourglass_single_position_base_2mm_18pinholes.tensor')
+    layout_path = cfg['paths'].get('base_layout_path')
     
     sproj = get_detector_count(layout_path)
     img_size = cfg['geometry']['img_dim']
@@ -48,7 +48,7 @@ def main():
     print(f"Detected {sproj} projection bins from layout.")
 
     # --- Phantom Loading ---
-    phantom_data = torch.load(cfg['paths']['phantom_path'], map_location=device)
+    phantom_data = torch.load(cfg['paths']['phantom_path'], map_location=device, weights_only=False)
     phantom_tensor = phantom_data["Phantom tensor"]
     
     h, w = phantom_tensor.shape

@@ -12,7 +12,7 @@ def get_detector_count(layout_file: str) -> int:
     if not os.path.exists(layout_file):
         raise FileNotFoundError(f"Layout file missing: {layout_file}")
     
-    layout_data = torch.load(layout_file, map_location="cpu")
+    layout_data = torch.load(layout_file, map_location="cpu", weights_only=False)
     first_pos_key = list(layout_data["layouts"].keys())[0]
     return layout_data["layouts"][first_pos_key]["detector units"].shape[0]
 
