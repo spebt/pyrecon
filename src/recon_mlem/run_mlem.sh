@@ -7,8 +7,8 @@
 #SBATCH --time=01:00:00                 # Total time for flist + proj + mlem
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=36G                       # 32GB for matrix cache + 4GB overhead
+#SBATCH --cpus-per-task=20
+#SBATCH --mem=60G                       # 32GB for matrix cache + 4GB overhead
 #SBATCH --mail-user=smehta28@buffalo.edu
 #SBATCH --mail-type=FAIL,END
 
@@ -24,7 +24,7 @@ echo "Running on: $(hostname)"
 echo "Config:     configs/base_config.yml"
 echo "=========================================================="
 
-source ../venv/bin/activate
+source /vscratch/grp-rutaoyao/sid/venv/bin/activate
 
 # --- STEP 1: Generate File List ---
 echo "Step 1/3: Generating Dataset File List..."

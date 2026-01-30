@@ -7,7 +7,7 @@ paths:
   # Where to save the file list CSV
   flist_path: "/vscratch/grp-rutaoyao/sid/data-test/mph_hourglass_single_position_base_3mm_18pinholes_rotated_elliptical/outputs/dataset_flist.csv"
   # The input phantom for fake projections
-  phantom_path: "../../../custom_phantoms/hot_rods_phantom_128_mm_x_128_mm_snmmi.pt"
+  phantom_path: "../../custom_phantoms/hot_rods_phantom_128_mm_x_128_mm_snmmi.pt"
   # Output file for generated projections
   projs_path: "/vscratch/grp-rutaoyao/sid/data-test/mph_hourglass_single_position_base_3mm_18pinholes_rotated_elliptical/outputs/derenzo-projs.npy"
   # Output file for MLEM reconstruction
