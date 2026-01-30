@@ -1,0 +1,28 @@
+# --- Project Paths ---
+paths:
+  # The directory where system matrix (.tensor) and HDF5 files live
+  data_dir: "../data/mph_hourglass_single_position_base_2mm_18pinholes_rotated_elliptical"
+  # Subdirectory for HDF5 ppdf files
+  hdf5_dir: "../data/mph_hourglass_single_position_base_2mm_18pinholes_rotated_elliptical/outputs"
+  # Where to save the file list CSV
+  flist_path: "../data/mph_hourglass_single_position_base_2mm_18pinholes_rotated_elliptical/outputs/dataset_flist.csv"
+  # The input phantom for fake projections
+  phantom_path: "custom_phantoms/hot_rods_phantom_128_mm_x_128_mm_snmmi.pt"
+  # Output file for generated projections
+  projs_path: "../data/mph_hourglass_single_position_base_2mm_18pinholes_rotated_elliptical/outputs/derenzo-projs.npy"
+  # Output file for MLEM reconstruction
+  recon_out_path: "../data/mph_hourglass_single_position_base_2mm_18pinholes_rotated_elliptical/outputs/recon_mlem_torch_optimized.npz"
+  # Tensor base layout path
+  base_layout_path: "../data/scanner_layouts/mph_hourglass_single_position_base_2mm_18pinholes.tensor"
+# --- System Geometry ---
+geometry:
+  img_dim: 512       # FOV pixel dimension (e.g., 512x512)
+  pixel_size_mm: 0.25
+  num_layouts: 40    # Number of layouts after rotations/translations
+
+# --- MLEM Settings ---
+mlem:
+  iterations: 150
+  convergence_tol: 1e-4
+  save_every: 5      # Save estimate every N iterations
+  cache_data: true   # Load all matrices into RAM (requires ~32GB)
