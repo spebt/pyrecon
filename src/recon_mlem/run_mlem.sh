@@ -8,7 +8,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=20
-#SBATCH --mem=60G                       # 32GB for matrix cache + 4GB overhead
+#SBATCH --mem=5G                       # 32GB for matrix cache + 4GB overhead
 #SBATCH --mail-user=smehta28@buffalo.edu
 #SBATCH --mail-type=FAIL,END
 
