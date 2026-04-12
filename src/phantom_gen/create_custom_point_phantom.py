@@ -35,11 +35,11 @@ def safe_add_patch(img: torch.Tensor, patch: torch.Tensor, cx: int, cy: int) -> 
 def generate_targeted_phantom():
     # 1. Configuration
     symnum = 5
-    PHANTOM_POINTS = [(5.0, 5.0), (-5.0, -5.0)] # Point A source locations
-    ROD_DIAMETER = 3.0 # mm
-    PX_SIZE = 0.25 # mm/px
-    GRID_SIZE = 280 # px (resulting in 70x70mm FOV)
-    SS_FACTOR = 1 # Supersampling for smooth rods
+    PHANTOM_POINTS = [(1.75, 1.75), (-1.75, -1.75), (-1.75, 1.75), (1.75, -1.75)] # Point A source locations
+    ROD_DIAMETER = 0.5 # mm
+    PX_SIZE = 0.05 # mm/px
+    GRID_SIZE = 200 # px (resulting in 70x70mm FOV)
+    SS_FACTOR = 5 # Supersampling for smooth rods
     
     fov_size_mm = GRID_SIZE * PX_SIZE # 70.0 mm
     fov_n_pxs = (GRID_SIZE, GRID_SIZE)
@@ -100,7 +100,7 @@ def generate_targeted_phantom():
     plt.colorbar(im, label="Activity Intensity")
     ax.set_xlabel("x (mm)")
     ax.set_ylabel("y (mm)")
-    ax.set_title(f"Targeted Phantom: 2 Rods (3mm Dia)\nLocations: {PHANTOM_POINTS}")
+    ax.set_title(f"Targeted Phantom: {len(PHANTOM_POINTS)} Rods ({ROD_DIAMETER}mm Dia)\nLocations: {PHANTOM_POINTS}")
     
     # Zoom in to the center to see the rods clearly
     ax.set_xlim([-half_fov, half_fov])

@@ -17,10 +17,10 @@ from _disk_shape import fov_tensor_dict, hot_rods_add_sector
 # =============================================================================
 
 # Spatial dimensions of the phantom grid in millimeters
-fov_size_in_mm = (128.0, 128.0) 
+fov_size_in_mm = (10.0, 10.0) 
 
 # Resolution of the phantom grid
-fov_px_size_in_mm = (0.25, 0.25)
+fov_px_size_in_mm = (0.05, 0.05)
 
 # Calculate total number of pixels based on physical size and resolution
 fov_n_pxs = (
@@ -37,15 +37,15 @@ phantom = zeros(fov_n_pxs, dtype=torch_float32)
 # =============================================================================
 
 # Rod radii for each of the 6 sectors (mm)
-radii = tensor([0.5, 1, 1.5, 2, 2.5, 3])
+radii = tensor([0.1, 0.15, 0.2, 0.25, 0.3, 0.4])
 
 # Translation shifts from FOV center for each sector [x, y] in mm
 shifts = tensor([
-    [10, 0.0], [10, 0.0], [10, 0.0], [10, 0.0], [12, 0.0], [12, 0.0]
+    [1.5, 0.0], [1.5, 0.0], [1.5, 0.0], [2, 0.0], [2, 0.0], [2, 0.0]
 ])
 
 # Density of rods: number of layers in the radial direction for each sector
-n_x_layers = tensor([20, 12, 8, 6, 5, 4])
+n_x_layers = tensor([9, 6, 5, 4, 3, 2])
 
 # Rod Spacing Multiplier:
 # 1.0 = Rods are touching (Center-to-Center distance = 2 * radius)

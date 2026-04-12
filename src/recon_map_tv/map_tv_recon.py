@@ -59,16 +59,16 @@ def main():
     img_dim = cfg["geometry"]["img_dim"]
     sfov    = img_dim * img_dim
 
-    n_outer  = cfg["map_tv"]["n_outer"]
-    n_inner  = cfg["map_tv"]["n_inner"]
-    beta     = cfg["map_tv"]["beta"]          # global TV weight
-    tau      = cfg["map_tv"]["tau"]            # primal step size
-    sigma    = cfg["map_tv"]["sigma"]          # dual step size
-    theta    = cfg["map_tv"]["theta"]          # extrapolation factor
-    eps      = cfg["map_tv"]["eps"]            # numerical floor
-    save_every      = cfg["map_tv"]["save_every"]
-    convergence_tol = cfg["map_tv"]["convergence_tol"]
-    cache_data      = cfg["map_tv"]["cache_data"]
+    n_outer  = int(cfg["map_tv"]["n_outer"])
+    n_inner  = int(cfg["map_tv"]["n_inner"])
+    beta     = float(cfg["map_tv"]["beta"])          # global TV weight
+    tau      = float(cfg["map_tv"]["tau"])            # primal step size
+    sigma    = float(cfg["map_tv"]["sigma"])          # dual step size
+    theta    = float(cfg["map_tv"]["theta"])          # extrapolation factor
+    eps      = float(cfg["map_tv"]["eps"])            # numerical floor
+    save_every      = int(cfg["map_tv"]["save_every"])
+    convergence_tol = float(cfg["map_tv"]["convergence_tol"])
+    cache_data      = bool(cfg["map_tv"]["cache_data"])
 
     # Stability check: τσ < 1/8 for 2D TV (6 neighbors → 1/12 for 3D)
     if tau * sigma >= 1.0 / 8.0:
@@ -84,7 +84,7 @@ def main():
     pdata_full = torch.from_numpy(np.load(cfg["paths"]["projs_path"])).to(device)
 
     # Scatter/randoms background (set to zero if not provided)
-    r_background = cfg["map_tv"].get("background", 0.0)
+    r_background = float(cfg["map_tv"].get("background", 0.0))
 
     # --- 2. Pre-compute sensitivity map & optionally cache matrices ---
     print("Pre-calculating Sensitivity Map...")
