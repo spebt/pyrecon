@@ -12,7 +12,6 @@ Reference: new_recon.md — MAP-TV Reconstruction for SPECT specification.
 """
 
 import numpy as np
-import time
 import torch
 import os
 import h5py
@@ -32,9 +31,9 @@ def load_system_matrix(h5_path: str, device: torch.device) -> torch.Tensor:
     """Auto-detects sparse/dense HDF5 and returns a PyTorch tensor."""
     with h5py.File(h5_path, "r") as h5f:
         if "data" in h5f:
-            indptr  = torch.tensor(h5f["indptr"][:],  dtype=torch.int32,   device=device)
-            indices = torch.tensor(h5f["indices"][:], dtype=torch.int32,   device=device)
-            data    = torch.tensor(h5f["data"][:],    dtype=torch.float32, device=device)
+            indptr  = torch.as_tensor(h5f["indptr"][:],  dtype=torch.int32).to(device)
+            indices = torch.as_tensor(h5f["indices"][:], dtype=torch.int32).to(device)
+            data    = torch.as_tensor(h5f["data"][:],    dtype=torch.float32).to(device)
             shape   = tuple(h5f.attrs["shape"])
             return torch.sparse_csr_tensor(indptr, indices, data, size=shape, device=device)
         elif "ppdfs" in h5f:
@@ -80,7 +79,8 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}  |  Image: {img_dim}x{img_dim}  |  β={beta}  |  τ={tau}  |  σ={sigma}")
 
-    flist      = [f.strip() for f in open(cfg["paths"]["flist_path"], "r")]
+    with open(cfg["paths"]["flist_path"], "r") as flist_file:
+        flist = [line.strip() for line in flist_file]
     pdata_full = torch.from_numpy(np.load(cfg["paths"]["projs_path"])).to(device)
 
     # Scatter/randoms background (set to zero if not provided)
@@ -93,18 +93,19 @@ def main():
     back_proj       = torch.zeros((sfov, 1), device=device, dtype=torch.float32)
     cached_matrices = []
 
+    ones_vec = None
     with torch.no_grad():
         for fname in flist:
             m_chunk = load_system_matrix(fname, device)
+            sproj   = m_chunk.shape[0]
+            if ones_vec is None or ones_vec.shape[0] != sproj:
+                ones_vec = torch.ones((sproj, 1), device=device, dtype=torch.float32)
+
             if m_chunk.is_sparse_csr:
-                m_chunk_t   = m_chunk.t().to_sparse_csr()
-                sproj       = m_chunk.shape[0]
-                ones_vec    = torch.ones((sproj, 1), device=device, dtype=torch.float32)
+                m_chunk_t = m_chunk.t().to_sparse_csr()
                 sensitivity_map += torch.sparse.mm(m_chunk_t, ones_vec)
             else:
-                m_chunk_t   = m_chunk.t()
-                sproj       = m_chunk.shape[0]
-                ones_vec    = torch.ones((sproj, 1), device=device, dtype=torch.float32)
+                m_chunk_t = m_chunk.t()
                 sensitivity_map += torch.matmul(m_chunk_t, ones_vec)
 
             if cache_data:
@@ -185,7 +186,7 @@ def main():
             if it % save_every == 0:
                 estimates_history.append(estimate.view(img_dim, img_dim).cpu().numpy())
 
-            diff = torch.norm(estimate - prev_est) / torch.norm(prev_est).clamp(min=eps)
+            diff = torch.dist(estimate, prev_est) / torch.norm(prev_est).clamp(min=eps)
             if diff < convergence_tol:
                 print(f"\nConvergence reached at outer iteration {it}  (diff={diff:.2e})")
                 break

@@ -13,58 +13,42 @@ and update the stability constraint to τσ < 1/12 (from 1/8 for 2D).
 import torch
 
 
-def grad_2d(x: torch.Tensor) -> torch.Tensor:
+def grad_2d(x: torch.Tensor, out: torch.Tensor) -> None:
     """
-    Compute the 2D forward-difference gradient of image x.
+    Write the 2D forward-difference gradient of x into pre-allocated `out`.
 
     Args:
-        x: Image tensor of shape (H, W).
-
-    Returns:
-        p: Gradient field of shape (2, H, W).
-           p[0] = Dx (x-direction / columns), p[1] = Dy (y-direction / rows).
+        x:   Image tensor of shape (H, W).
+        out: Pre-allocated buffer of shape (2, H, W). Must be zero-initialized
+             once before first use — boundary positions (last col of out[0],
+             last row of out[1]) are never written and must stay 0.
 
     Boundary: Zero-padding (Dirichlet) — last row/col difference is 0.
     """
-    # Dx: forward difference along columns (dim=1)
-    dx = torch.zeros_like(x)
-    dx[:, :-1] = x[:, 1:] - x[:, :-1]  # interior; last column stays 0
-
-    # Dy: forward difference along rows (dim=0)
-    dy = torch.zeros_like(x)
-    dy[:-1, :] = x[1:, :] - x[:-1, :]  # interior; last row stays 0
-
-    return torch.stack([dx, dy], dim=0)  # (2, H, W)
+    out[0, :, :-1] = x[:, 1:] - x[:, :-1]   # Dx interior; last col stays 0
+    out[1, :-1, :] = x[1:, :] - x[:-1, :]   # Dy interior; last row stays 0
 
 
-def div_2d(p: torch.Tensor) -> torch.Tensor:
+def div_2d(p: torch.Tensor, out: torch.Tensor) -> None:
     """
-    Compute the 2D backward-difference divergence of vector field p.
-    This is the exact negative adjoint of grad_2d: div = -∇^T.
+    Write the 2D backward-difference divergence of p into pre-allocated `out`.
+    Exact negative adjoint of grad_2d: div = -∇^T.
 
     Args:
-        p: Gradient field of shape (2, H, W).
-           p[0] = px (x-component), p[1] = py (y-component).
-
-    Returns:
-        d: Divergence of shape (H, W).
+        p:   Gradient field of shape (2, H, W).
+        out: Pre-allocated output buffer of shape (H, W). Fully overwritten.
     """
     px, py = p[0], p[1]
 
-    # Backward difference along columns (adjoint of Dx)
-    # d_px[i, j] = px[i, j] - px[i, j-1]  with px[i, -1] = 0 at boundary
-    d_px = torch.zeros_like(px)
-    d_px[:, 0]  =  px[:, 0]           # first column: px[i,0] - 0
-    d_px[:, 1:] =  px[:, 1:] - px[:, :-1]
-    d_px[:, -1] = -px[:, -2]          # last column: 0 - px[i,-2]
+    # x-component (columns): write all positions cleanly without double-write
+    out[:, 0]    =  px[:, 0]
+    out[:, 1:-1] =  px[:, 1:-1] - px[:, :-2]
+    out[:, -1]   = -px[:, -2]
 
-    # Backward difference along rows (adjoint of Dy)
-    d_py = torch.zeros_like(py)
-    d_py[0, :]  =  py[0, :]           # first row
-    d_py[1:, :] =  py[1:, :] - py[:-1, :]
-    d_py[-1, :] = -py[-2, :]          # last row
-
-    return d_px + d_py  # (H, W)
+    # y-component (rows): accumulate into out
+    out[0, :]    +=  py[0, :]
+    out[1:-1, :] +=  py[1:-1, :] - py[:-2, :]
+    out[-1, :]   += -py[-2, :]
 
 
 def tv_proximal_chambolle_pock(
@@ -80,6 +64,9 @@ def tv_proximal_chambolle_pock(
     Solve the TV proximal problem via Chambolle-Pock primal-dual algorithm:
         x* = argmin_{x>=0}  0.5 * ||x - x_em||^2 + alpha * TV(x)
 
+    All working buffers are pre-allocated before the loop — no heap
+    allocations occur inside the inner iteration.
+
     Args:
         x_em:    EM-updated image, shape (H, W), on the correct device.
         alpha:   TV regularization strength (scaled beta).
@@ -87,36 +74,49 @@ def tv_proximal_chambolle_pock(
         sigma:   Dual step size.
         theta:   Extrapolation factor (1.0 = standard Chambolle-Pock).
         n_inner: Number of inner iterations.
-        eps:     Small floor to prevent division by zero.
+        eps:     Small floor to prevent division by zero in dual norm.
 
     Returns:
         x: Denoised image of shape (H, W).
     """
-    H, W = x_em.shape
+    H, W   = x_em.shape
     device = x_em.device
+    dtype  = x_em.dtype
 
-    # Initialize primal and dual variables
-    x     = x_em.clone()
-    x_bar = x_em.clone()
-    p     = torch.zeros(2, H, W, device=device, dtype=x_em.dtype)  # dual field
+    # --- Pre-allocate all working buffers (zero allocs inside the loop) ---
+    x        = x_em.clone()
+    x_buf    = torch.empty_like(x)                        # primal buffer-swap partner
+    x_bar    = x_em.clone()
+    p        = torch.zeros(2, H, W, device=device, dtype=dtype)
+    # grad_buf boundary positions (last col / last row) are written once as 0
+    # and never touched again — Dirichlet BC is maintained across iterations.
+    grad_buf = torch.zeros(2, H, W, device=device, dtype=dtype)
+    div_buf  = torch.empty(H, W, device=device, dtype=dtype)
+    norm_buf = torch.empty(H, W, device=device, dtype=dtype)  # dual norm / scale
 
     for _ in range(n_inner):
-        x_prev = x.clone()
+        # --- 1. Dual Update ---
+        grad_2d(x_bar, out=grad_buf)
+        p.add_(grad_buf, alpha=sigma)            # p += sigma * grad(x_bar)  [in-place]
 
-        # --- 1. Dual Update (gradient ascent + projection onto L∞/alpha ball) ---
-        q = p + sigma * grad_2d(x_bar)                    # (2, H, W)
-        # Pointwise L2 norm of the 2-vector at each pixel
-        q_norm = torch.sqrt(q[0] ** 2 + q[1] ** 2).clamp(min=eps)  # (H, W)
-        # Project: p = q / max(1, ||q|| / alpha)
-        scale = torch.clamp(q_norm / alpha, min=1.0)      # (H, W)
-        p = q / scale.unsqueeze(0)                        # (2, H, W)
+        # Pointwise L2 norm of p, then reuse buffer as projection scale
+        torch.mul(p[0], p[0], out=norm_buf)
+        norm_buf.addcmul_(p[1], p[1])            # norm_buf = px^2 + py^2
+        norm_buf.sqrt_().clamp_(min=eps)          # norm_buf = ||p||_2
+        norm_buf.div_(alpha).clamp_(min=1.0)      # norm_buf = max(||p||/alpha, 1) = scale
+        p.div_(norm_buf.unsqueeze(0))             # project p onto alpha-ball in-place
 
-        # --- 2. Primal Update (gradient descent + data fidelity proximal) ---
-        # Closed-form solution to:  argmin_x 0.5*||x-x_em||^2 - tau*<div(p), x>
-        x = (x_prev + tau * div_2d(p) + tau * x_em) / (1.0 + tau)
-        x = torch.clamp(x, min=0.0)                       # non-negativity
+        # --- 2. Primal Update (buffer swap — no clone) ---
+        # After swap: x_buf holds x^n (old iterate), x is the spare write target.
+        x, x_buf = x_buf, x
+        div_2d(p, out=div_buf)
+        torch.add(x_buf, div_buf, alpha=tau, out=x)   # x = x_buf + tau * div(p)
+        x.add_(x_em, alpha=tau)                        # x += tau * x_em
+        x.div_(1.0 + tau)                              # x /= (1 + tau)
+        x.clamp_(min=0.0)                              # non-negativity
 
-        # --- 3. Extrapolation (over-relaxation) ---
-        x_bar = x + theta * (x - x_prev)
+        # --- 3. Extrapolation ---
+        torch.sub(x, x_buf, out=x_bar)           # x_bar = x - x^n
+        x_bar.mul_(theta).add_(x)                 # x_bar = x + theta*(x - x^n)
 
     return x
