@@ -210,11 +210,16 @@ def main():
                               width_ratios=[2, 1],
                               hspace=0.45, wspace=0.35)
 
+    # Compute a shared vmax from the 99.5th percentile of the final frame.
+    # Using the absolute max causes Poisson noise outliers in noisy reconstructions
+    # to compress the colormap, making the signal appear tiny ("zoomed out").
+    vmax_val = args.vmax if args.vmax else float(np.percentile(reconstructions[-1], 99.5))
+
     # ── Left: final reconstruction ────────────────────────────────────────────
     ax_main = fig.add_subplot(gs[0, 0])
     im = ax_main.imshow(
         reconstructions[-1].T, cmap="gray_r", extent=img_extent,
-        vmax=args.vmax, origin="lower",
+        vmin=0, vmax=vmax_val, origin="lower",
     )
     plt.colorbar(im, ax=ax_main, label="Intensity", fraction=0.046, pad=0.04)
     ax_main.set_title(f"MAP-TV  —  iter {final_iter}", fontsize=13, fontweight="bold")
@@ -241,7 +246,6 @@ def main():
     indices  = np.linspace(0, n_saved - 1, n_show, dtype=int)
     cols     = 3
     rows     = int(np.ceil(n_show / cols))
-    vmax_val = args.vmax if args.vmax else reconstructions.max()
 
     for plot_idx, rec_idx in enumerate(indices):
         strip_pos = ax_strip.get_position()

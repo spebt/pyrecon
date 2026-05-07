@@ -192,13 +192,18 @@ def main():
         print("phantom_path not set or not found — skipping CNR.")
 
     # ── Reconstruction image ──────────────────────────────────────────────────
+    # Compute a shared vmax from the 99.5th percentile of the final frame.
+    # Using the absolute max causes Poisson noise outliers in noisy reconstructions
+    # to compress the colormap, making the signal appear tiny ("zoomed out").
+    vmax_val = args.vmax if args.vmax else float(np.percentile(reconstructions[-1], 99.5))
+
     fig, axes = plt.subplots(1, 2 if cnr_history else 1,
                              figsize=(14 if cnr_history else 7, 6))
     ax_img = axes[0] if cnr_history else axes
 
     im = ax_img.imshow(
         reconstructions[-1].T, cmap="gray_r", extent=img_extent,
-        vmax=args.vmax, origin="lower",
+        vmin=0, vmax=vmax_val, origin="lower",
     )
     plt.colorbar(im, ax=ax_img, label="Intensity", fraction=0.046, pad=0.04)
     ax_img.set_title(f"MLEM — iter {final_iter}", fontsize=13, fontweight="bold")
