@@ -49,8 +49,7 @@ def main():
     pad_h, pad_w = (img_size - h) // 2, (img_size - w) // 2
     phantom_padded = torch.nn.functional.pad(phantom_tensor, (pad_w, pad_w, pad_h, pad_h), "constant", 0)
     
-    scale_factor = float(cfg.get("noise", {}).get("scale_factor", 1.0))
-    phantom_flat = (phantom_padded * scale_factor).view(-1, 1).to(device)
+    phantom_flat = phantom_padded.view(-1, 1).to(device)
 
     all_projs = []
     progress = Progress(TextColumn("[blue]{task.description}"), BarColumn(), MofNCompleteColumn(), TimeElapsedColumn())
