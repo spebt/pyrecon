@@ -136,7 +136,7 @@ def main():
     ax_img = axes[0] if cnr_history else axes
 
     im = ax_img.imshow(
-        reconstructions[-1], cmap="gray_r", extent=img_extent,
+        reconstructions[-1].T, cmap="gray_r", extent=img_extent,
         vmax=args.vmax, origin="lower",
     )
     plt.colorbar(im, ax=ax_img, label="Intensity", fraction=0.046, pad=0.04)

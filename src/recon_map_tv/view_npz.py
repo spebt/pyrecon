@@ -152,7 +152,7 @@ def main():
     # ── Left: final reconstruction ────────────────────────────────────────────
     ax_main = fig.add_subplot(gs[0, 0])
     im = ax_main.imshow(
-        reconstructions[-1], cmap="gray_r", extent=img_extent,
+        reconstructions[-1].T, cmap="gray_r", extent=img_extent,
         vmax=args.vmax, origin="lower",
     )
     plt.colorbar(im, ax=ax_main, label="Intensity", fraction=0.046, pad=0.04)
@@ -190,7 +190,7 @@ def main():
             strip_pos.width / cols * 0.88,
             strip_pos.height / rows * 0.88,
         ])
-        sub_ax.imshow(reconstructions[rec_idx], cmap="gray_r",
+        sub_ax.imshow(reconstructions[rec_idx].T, cmap="gray_r",
                       vmin=0, vmax=vmax_val, origin="lower")
         sub_ax.set_title(f"it {(rec_idx + 1) * save_every}", fontsize=6, pad=2)
         sub_ax.axis("off")
