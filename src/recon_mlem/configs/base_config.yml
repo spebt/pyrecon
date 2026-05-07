@@ -23,6 +23,11 @@ geometry:
   pixel_size_mm: 0.0195
   num_layouts: 1    # Number of layouts after rotations/translations
 
+# --- CNR Evaluation ---
+cnr:
+  shrink_px: 1   # shrink rod ROI inward by N pixels (reduces partial-volume bias)
+  erode_px: 2    # erode background mask inward by N pixels (avoids edge artefacts)
+
 # --- Poisson Noise Simulation ---
 noise:
   seed: 42            # Fixed seed for reproducibility
