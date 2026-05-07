@@ -32,7 +32,7 @@ noise:
 # --- MAP-TV Algorithm Settings ---
 map_tv:
   # --- Outer EM Loop ---
-  n_outer: 60             # Outer EM iterations (20-60 recommended)
+  n_outer: 100             # Outer EM iterations (20-60 recommended)
   convergence_tol: 1e-4   # Stop if ||x^k+1 - x^k|| / ||x^k|| < tol
   save_every: 5           # Save image snapshot every N outer iterations
   cache_data: true        # Cache all system matrices in RAM (requires ~32GB)
@@ -45,15 +45,15 @@ map_tv:
   beta: 0.001  # P1-A: start of coarse β sweep (0.001 → 0.01 → 0.1 → 1 → 10 → 100)
 
   # --- Inner Chambolle-Pock TV Proximal Solver ---
-  n_inner: 30             # Inner TV iterations (10-30; diminishing returns beyond 30)
+  n_inner: 60             # Inner TV iterations (10-30; diminishing returns beyond 30)
 
   # Primal step size (how aggressively x updates each inner step)
-  tau: 0.25
+  tau: 0.2
   # Dual step size (how aggressively the edge-field p updates)
   # STABILITY CONSTRAINT: tau * sigma < 1/8 (=0.125) for 2D TV
   #                        tau * sigma < 1/12 (≈0.083) for 3D TV
   # Default: 0.25 * 0.25 = 0.0625 < 0.125 ✓
-  sigma: 0.25
+  sigma: 0.2
 
   # Extrapolation factor for over-relaxation (1.0 = standard Chambolle-Pock)
   theta: 1.0
