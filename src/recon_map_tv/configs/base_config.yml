@@ -38,7 +38,7 @@ noise:
 map_tv:
   # --- Outer EM Loop ---
   n_outer: 100             # Outer EM iterations (20-60 recommended)
-  convergence_tol: 1e-4   # Stop if ||x^k+1 - x^k|| / ||x^k|| < tol
+  convergence_tol: 1.0e-4   # Stop if ||x^k+1 - x^k|| / ||x^k|| < tol
   save_every: 5           # Save image snapshot every N outer iterations
   cache_data: true        # Cache all system matrices in RAM (requires ~32GB)
 

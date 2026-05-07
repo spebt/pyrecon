@@ -39,6 +39,6 @@ noise:
 # --- MLEM Settings ---
 mlem:
   iterations: 150
-  convergence_tol: 1e-4
+  convergence_tol: 1.0e-4
   save_every: 5      # Save estimate every N iterations
   cache_data: true   # Load all matrices into RAM (requires ~32GB)
