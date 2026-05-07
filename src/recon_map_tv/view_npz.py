@@ -53,6 +53,70 @@ def _bg_mask(meta, H, W, erode_px=2):
     print("  Square/unknown phantom — using full frame as background.")
     return torch.ones((H, W), dtype=torch.bool)
 
+def _rods_from_phantom(ph):
+    """
+    Extract [{center_px, radius_px}, ...] from any phantom format.
+
+    Priority:
+    1. Top-level 'Rods' key  (contrast_ring_hotrods phantom)
+    2. Top-level 'Lesions' key  (legacy)
+    3. metadata.rod_points_mm + rod_diameter_mm  (targeted phantom)
+    4. Auto-detect from tensor via connected components  (hotrod phantom)
+    """
+    if ph.get("Rods"):
+        return ph["Rods"]
+
+    if ph.get("Lesions"):
+        return [{"center_px": li["center_px"], "radius_px": li["radius_px"]}
+                for li in ph["Lesions"]]
+
+    meta = ph.get("Metadata", {})
+
+    # targeted phantom: rod centres given in mm
+    if "rod_points_mm" in meta and "rod_diameter_mm" in meta:
+        mm_pp = meta.get("mm_per_pixel") or meta.get("mm per pixel")
+        n_px  = meta.get("n_pixels")     or meta.get("n pixels")
+        mm_pp = _to_list(mm_pp)
+        n_px  = _to_list(n_px)
+        dx, dy   = float(mm_pp[0]), float(mm_pp[1])
+        nx, ny   = int(n_px[0]),    int(n_px[1])
+        radius_px = max(1, int(round(float(meta["rod_diameter_mm"]) / 2.0 / dx)))
+        rods = []
+        for pt in meta["rod_points_mm"]:
+            x_mm, y_mm = float(pt[0]), float(pt[1])
+            cx = int(round(x_mm / dx + nx / 2.0))
+            cy = int(round(y_mm / dy + ny / 2.0))
+            rods.append({"center_px": (cx, cy), "radius_px": radius_px})
+        return rods
+
+    # hotrod phantom: no position info saved — detect from tensor
+    tensor = ph.get("Phantom tensor")
+    if tensor is not None:
+        try:
+            from scipy import ndimage
+            arr = tensor.numpy() if hasattr(tensor, "numpy") else np.array(tensor)
+            thresh = arr.max() * 0.1
+            if thresh > 0:
+                labeled, n_comp = ndimage.label(arr > thresh)
+                rods = []
+                for i in range(1, n_comp + 1):
+                    region = labeled == i
+                    if region.sum() < 4:
+                        continue
+                    coords = np.argwhere(region)
+                    cx, cy = coords.mean(axis=0)
+                    radius_px = max(1, int(round(np.sqrt(region.sum() / np.pi))))
+                    rods.append({"center_px": (int(round(cx)), int(round(cy))),
+                                 "radius_px": radius_px})
+                if rods:
+                    print(f"  Auto-detected {len(rods)} rods from phantom tensor.")
+                return rods
+        except ImportError:
+            print("  scipy not available — cannot auto-detect rods.")
+
+    return []
+
+
 def _cnr_frame(frame, rod_masks, bg_mask):
     """Bushberg CNR: |μ_hot − μ_bg| / σ_bg, averaged across rods."""
     bg_vals = frame[bg_mask]
@@ -110,10 +174,7 @@ def main():
     if phantom_path and os.path.exists(phantom_path):
         ph   = torch.load(phantom_path, map_location="cpu", weights_only=False)
         meta = ph.get("Metadata", {})
-        rods = ph.get("Rods") or [
-            {"center_px": li["center_px"], "radius_px": li["radius_px"]}
-            for li in ph.get("Lesions", [])
-        ]
+        rods = _rods_from_phantom(ph)
         if rods:
             print(f"Computing CNR  ({len(rods)} rods, shrink={shrink_px}px, erode={erode_px}px)")
             rod_masks = _make_rod_masks(rods, h, w, shrink_px=shrink_px)
