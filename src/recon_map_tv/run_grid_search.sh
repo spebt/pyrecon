@@ -22,6 +22,27 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# ── VIRTUAL ENVIRONMENT ───────────────────────────────────────────────────────
+# Set VENV_PATH to your venv directory, or pass it as the second argument.
+# Examples:
+#   VENV_PATH=~/envs/pyrecon bash run_grid_search.sh
+#   bash run_grid_search.sh configs/base_config.yml ~/envs/pyrecon
+VENV_PATH="${2:-${VENV_PATH:-}}"
+
+if [ -n "$VENV_PATH" ]; then
+    # shellcheck disable=SC1091
+    source "${VENV_PATH}/bin/activate"
+    echo "Activated venv: ${VENV_PATH}"
+elif [ -f ".venv/bin/activate" ]; then
+    source ".venv/bin/activate"
+    echo "Activated venv: .venv"
+elif [ -f "../../.venv/bin/activate" ]; then
+    source "../../.venv/bin/activate"
+    echo "Activated venv: ../../.venv"
+else
+    echo "[warn] No venv found — using system Python ($(which python3))"
+fi
+
 BASE_CONFIG="${1:-configs/base_config.yml}"
 
 # ── GRID PARAMETERS ──────────────────────────────────────────────────────────
