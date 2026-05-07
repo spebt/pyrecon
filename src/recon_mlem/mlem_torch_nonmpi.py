@@ -40,6 +40,9 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     flist = [f.strip() for f in open(cfg['paths']['flist_path'], "r")]
     pdata_full = torch.from_numpy(np.load(cfg['paths']['projs_path'])).to(device)
+    proj_scale = float(cfg.get("noise", {}).get("scale_factor", 1.0))
+    if proj_scale != 1.0:
+        pdata_full = pdata_full / proj_scale
 
     estimate = torch.ones((sfov, 1), device=device, dtype=torch.float32)
     sensitivity_map = torch.zeros((sfov, 1), device=device, dtype=torch.float32)

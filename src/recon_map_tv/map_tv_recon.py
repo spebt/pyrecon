@@ -82,6 +82,9 @@ def main():
     with open(cfg["paths"]["flist_path"], "r") as flist_file:
         flist = [line.strip() for line in flist_file]
     pdata_full = torch.from_numpy(np.load(cfg["paths"]["projs_path"])).to(device)
+    proj_scale = float(cfg.get("noise", {}).get("scale_factor", 1.0))
+    if proj_scale != 1.0:
+        pdata_full = pdata_full / proj_scale
 
     # Scatter/randoms background (set to zero if not provided)
     r_background = float(cfg["map_tv"].get("background", 0.0))
