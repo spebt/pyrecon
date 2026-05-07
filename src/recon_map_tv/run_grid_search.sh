@@ -29,16 +29,9 @@ cd "$SCRIPT_DIR"
 #   bash run_grid_search.sh configs/base_config.yml ~/envs/pyrecon
 VENV_PATH="${2:-${VENV_PATH:-}}"
 
-if [ -n "$VENV_PATH" ]; then
-    # shellcheck disable=SC1091
-    source "${VENV_PATH}/bin/activate"
-    echo "Activated venv: ${VENV_PATH}"
-elif [ -f ".venv/bin/activate" ]; then
-    source ".venv/bin/activate"
-    echo "Activated venv: .venv"
-elif [ -f "../../.venv/bin/activate" ]; then
-    source "../../.venv/bin/activate"
-    echo "Activated venv: ../../.venv"
+if [ -f "../../../venv/bin/activate" ]; then
+    source "../../../venv/bin/activate"
+    echo "Activated venv: ../../venv"
 else
     echo "[warn] No venv found — using system Python ($(which python3))"
 fi
@@ -63,7 +56,7 @@ _cfg() { python3 -c "import yaml; cfg=yaml.safe_load(open('${BASE_CONFIG}')); pr
 FLIST_PATH=$(_cfg "cfg['paths']['flist_path']")
 PROJS_NOISELESS=$(_cfg "cfg['paths']['projs_path']")
 PROJS_NOISY_TEMPLATE=$(_cfg "cfg['paths']['projs_noisy_path']")   # _sfXXX inserted before .npy
-BASE_OUT=$(_cfg "import os; print(os.path.dirname(cfg['paths']['recon_out_path']))")
+BASE_OUT=$(python3 -c "import yaml, os; cfg=yaml.safe_load(open('${BASE_CONFIG}')); print(os.path.dirname(cfg['paths']['recon_out_path']))")
 
 SUMMARY_DIR="${BASE_OUT}/experiments/grid_summary"
 mkdir -p "$SUMMARY_DIR" logs
