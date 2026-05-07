@@ -39,16 +39,21 @@ fi
 BASE_CONFIG="${1:-configs/base_config.yml}"
 
 # ── GRID PARAMETERS ──────────────────────────────────────────────────────────
+# BETAS=(0.005 0.0005 0.001 0.002 0.01 0.1)
 
-BETAS=(0.001 0.01 0.1 1.0 10.0)
+# N_OUTERS=(60 80 100 120)
+# N_INNERS=(20 30 50 60)
+# TAUS=(0.2 0.25 0.3 0.5)
+# SIGMAS=(0.2 0.25 0.3 0.2)
+BETAS=(0.002)
 
-N_OUTERS=(100)
-N_INNERS=(60)
-TAUS=(0.2)
-SIGMAS=(0.2)
+N_OUTERS=(300)
+N_INNERS=(80)
+TAUS=(0.3)
+SIGMAS=(0.3)
 
 # One noisy run per entry. Remove entries or set to empty array to skip.
-SCALE_FACTORS=(100 1000 10000)
+SCALE_FACTORS=()
 
 # ── READ BASE PATHS FROM CONFIG ───────────────────────────────────────────────
 _cfg() { python3 -c "import yaml; cfg=yaml.safe_load(open('${BASE_CONFIG}')); print($1)"; }

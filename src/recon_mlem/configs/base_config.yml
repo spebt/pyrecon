@@ -13,7 +13,7 @@ paths:
   # The input phantom for fake projections
   phantom_path: "../../custom_phantoms/hot_rods_phantom_10.0_mm_x_10.0_mm_2.pt"
   # Output reconstruction file
-  recon_out_path: "../../../data/hybrid_sc_spect_mph_biconical_base_72_2.5_0.4/outputs/recon_map_tv.npz"
+  recon_out_path: "../../../data/hybrid_sc_spect_mph_biconical_base_72_2.5_0.4/outputs/recon_mlem_torch_optimized.npz"
   # Tensor base layout path
   base_layout_path: "../../../data/scanner_layouts/hybrid_sc_spect_mph_biconical_base_72_2.5_0.4.tensor"
 
