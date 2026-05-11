@@ -25,6 +25,8 @@ def load_system_matrix(h5_path: str, device: torch.device) -> torch.Tensor:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="configs/base_config.yml")
+    parser.add_argument("--noisy", action="store_true",
+                        help="Use Poisson-noisy projections (projs_noisy_path) instead of projs_path")
     args = parser.parse_args()
 
     with open(args.config, 'r') as f:
@@ -33,13 +35,17 @@ def main():
     # --- 1. Geometry & Hardware Setup ---
     img_dim = cfg['geometry']['img_dim']
     sfov = img_dim * img_dim
-    
+
     n_iterations = cfg['mlem']['iterations']
     cache_data = cfg['mlem']['cache_data']
-    
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     flist = [f.strip() for f in open(cfg['paths']['flist_path'], "r")]
-    pdata_full = torch.from_numpy(np.load(cfg['paths']['projs_path'])).to(device)
+
+    projs_key  = "projs_noisy_path" if args.noisy else "projs_path"
+    projs_file = cfg['paths'][projs_key]
+    print(f"Projections: {projs_file}  ({'noisy' if args.noisy else 'noiseless'})")
+    pdata_full = torch.from_numpy(np.load(projs_file)).to(device)
 
     estimate = torch.ones((sfov, 1), device=device, dtype=torch.float32)
     sensitivity_map = torch.zeros((sfov, 1), device=device, dtype=torch.float32)

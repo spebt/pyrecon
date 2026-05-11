@@ -49,6 +49,8 @@ def load_system_matrix(h5_path: str, device: torch.device) -> torch.Tensor:
 def main():
     parser = argparse.ArgumentParser(description="MAP-TV SPECT Reconstruction")
     parser.add_argument("--config", default="configs/base_config.yml")
+    parser.add_argument("--noisy", action="store_true",
+                        help="Use Poisson-noisy projections (projs_noisy_path) instead of projs_path")
     args = parser.parse_args()
 
     with open(args.config, "r") as f:
@@ -79,9 +81,13 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}  |  Image: {img_dim}x{img_dim}  |  β={beta}  |  τ={tau}  |  σ={sigma}")
 
+    projs_key  = "projs_noisy_path" if args.noisy else "projs_path"
+    projs_file = cfg["paths"][projs_key]
+    print(f"Projections: {projs_file}  ({'noisy' if args.noisy else 'noiseless'})")
+
     with open(cfg["paths"]["flist_path"], "r") as flist_file:
         flist = [line.strip() for line in flist_file]
-    pdata_full = torch.from_numpy(np.load(cfg["paths"]["projs_path"])).to(device)
+    pdata_full = torch.from_numpy(np.load(projs_file)).to(device)
 
     # Scatter/randoms background (set to zero if not provided)
     r_background = float(cfg["map_tv"].get("background", 0.0))

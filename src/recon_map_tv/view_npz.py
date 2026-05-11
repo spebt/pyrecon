@@ -140,6 +140,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default=os.path.join(_here, "configs", "base_config.yml"))
     parser.add_argument("--vmax", type=float, default=None)
+    parser.add_argument("--noisy", action="store_true",
+                        help="Show noisy sinogram panel (loads projs_noisy_path)")
     args = parser.parse_args()
 
     with open(args.config, "r") as f:
@@ -201,10 +203,23 @@ def main():
     else:
         print("phantom_path not set or not found — skipping CNR.")
 
+    # ── Noisy sinogram ────────────────────────────────────────────────────────
+    sino = None
+    if args.noisy:
+        noisy_path = cfg["paths"].get("projs_noisy_path", "")
+        if noisy_path and os.path.exists(noisy_path):
+            sino = np.load(noisy_path).astype(np.float32)   # (num_layouts, num_bins)
+            print(f"Sinogram shape: {sino.shape}  "
+                  f"mean={sino.mean():.2f}  max={sino.max():.0f}  "
+                  f"nonzero={np.count_nonzero(sino)}")
+        else:
+            print("--noisy set but projs_noisy_path not found — skipping sinogram.")
+
     # ── Figure layout ─────────────────────────────────────────────────────────
     # Row 0: [final recon (wide) | snapshot strip]
-    # Row 1: [CNR vs iteration (full width)]  ← only if CNR was computed
-    n_rows = 2 if cnr_history else 1
+    # Row 1: [sinogram (full width)]            ← only if noisy file found
+    # Row 2: [CNR vs iteration (full width)]    ← only if CNR was computed
+    n_rows = 1 + (sino is not None) + (cnr_history is not None)
     fig    = plt.figure(figsize=(14, 7 * n_rows))
     gs     = fig.add_gridspec(n_rows, 2,
                               width_ratios=[2, 1],
@@ -260,11 +275,37 @@ def main():
         sub_ax.set_title(f"it {(rec_idx + 1) * save_every}", fontsize=6, pad=2)
         sub_ax.axis("off")
 
+    # ── Sinogram / noisy projections (row 1, full width) ─────────────────────
+    sino_row = 1
+    if sino is not None:
+        ax_sino = fig.add_subplot(gs[sino_row, :])
+        n_layouts = sino.shape[0]
+        if n_layouts == 1:
+            ax_sino.plot(sino[0], linewidth=0.8, color="steelblue")
+            ax_sino.set_xlabel("Detector bin")
+            ax_sino.set_ylabel("Counts")
+            ax_sino.set_title("Noisy projections — single layout", fontsize=11)
+        else:
+            im_sino = ax_sino.imshow(
+                sino, aspect="auto", cmap="hot",
+                vmin=0, vmax=float(np.percentile(sino, 99.5)),
+            )
+            plt.colorbar(im_sino, ax=ax_sino, label="Counts", fraction=0.046, pad=0.04)
+            ax_sino.set_xlabel("Detector bin")
+            ax_sino.set_ylabel("Layout / angle")
+            ax_sino.set_title(
+                f"Noisy sinogram  ({n_layouts} layouts × {sino.shape[1]} bins)  "
+                f"— mean {sino.mean():.1f}  max {sino.max():.0f}",
+                fontsize=11,
+            )
+        ax_sino.grid(True, linestyle="--", alpha=0.4)
+
     # ── CNR vs iteration (bottom row, full width) ─────────────────────────────
     if cnr_history:
         iters    = [i * save_every for i in range(len(cnr_history))]
         best_idx = int(np.argmax(cnr_history))
-        ax_cnr   = fig.add_subplot(gs[1, :])
+        cnr_row  = sino_row + (sino is not None)
+        ax_cnr   = fig.add_subplot(gs[cnr_row, :])
         ax_cnr.plot(iters, cnr_history, "b-o", linewidth=2, markersize=4)
         ax_cnr.axvline(iters[best_idx], color="r", linestyle="--", linewidth=1.2,
                        label=f"Peak iter {iters[best_idx]}  (CNR = {cnr_history[best_idx]:.2f})")

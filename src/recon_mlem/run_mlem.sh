@@ -26,24 +26,38 @@ echo "=========================================================="
 
 source /vscratch/grp-rutaoyao/sid/venv/bin/activate
 
+# --- Parse --noisy flag ---
+NOISY=false
+for arg in "$@"; do
+    [ "$arg" = "--noisy" ] && NOISY=true
+done
+
+NOISY_FLAG=""
+[ "$NOISY" = true ] && NOISY_FLAG="--noisy"
+
 # --- STEP 1: Generate File List ---
-echo "Step 1/3: Generating Dataset File List..."
+echo "Step 1/4: Generating Dataset File List..."
 python generate_flist.py --config configs/base_config.yml
 if [ $? -ne 0 ]; then echo "Step 1 Failed"; exit 1; fi
 
 # --- STEP 2: Forward Projection ---
-echo "Step 2/3: Running Forward Projection (Generating Phantoms)..."
-python fake_projection.py --config configs/base_config.yml
+if [ "$NOISY" = true ]; then
+    echo "Step 2/4: Running Forward Projection (Poisson noise)..."
+    python fake_projection_noisy.py --config configs/base_config.yml
+else
+    echo "Step 2/4: Running Forward Projection (noiseless)..."
+    python fake_projection.py --config configs/base_config.yml
+fi
 if [ $? -ne 0 ]; then echo "Step 2 Failed"; exit 1; fi
 
 # --- STEP 3: MLEM Reconstruction ---
-echo "Step 3/3: Running MLEM Reconstruction..."
-python mlem_torch_nonmpi.py --config configs/base_config.yml
+echo "Step 3/4: Running MLEM Reconstruction..."
+python mlem_torch_nonmpi.py --config configs/base_config.yml $NOISY_FLAG
 if [ $? -ne 0 ]; then echo "Step 3 Failed"; exit 1; fi
 
-# --- Optional Step 4: Visualization ---
-echo "Step 4: Generating Final Plots..."
-python view_npz.py --config configs/base_config.yml
+# --- STEP 4: Visualization ---
+echo "Step 4/4: Generating Final Plots..."
+python view_npz.py --config configs/base_config.yml $NOISY_FLAG
 
 echo "=========================================================="
 echo "End Time:   $(date)"

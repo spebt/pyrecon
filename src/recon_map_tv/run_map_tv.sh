@@ -29,10 +29,19 @@ set -e
 
 mkdir -p logs
 
-# --- Parse arguments ---
-CONFIG="${1:-configs/base_config.yml}"
-shift || true
-OVERRIDES=("$@")
+# --- Parse arguments (strip --noisy before positional args) ---
+NOISY=false
+RAW_ARGS=("$@")
+FILTERED_ARGS=()
+for arg in "${RAW_ARGS[@]}"; do
+    if [ "$arg" = "--noisy" ]; then
+        NOISY=true
+    else
+        FILTERED_ARGS+=("$arg")
+    fi
+done
+CONFIG="${FILTERED_ARGS[0]:-configs/base_config.yml}"
+OVERRIDES=("${FILTERED_ARGS[@]:1}")
 
 # --- Build experiment tag ---
 if [ ${#OVERRIDES[@]} -eq 0 ]; then
@@ -108,25 +117,38 @@ else
     python generate_flist.py --config "$TEMP_CONFIG"
 fi
 
-# --- Step 2: Forward project phantom (skip if projections already exist) ---
-PROJS_PATH=$(python3 -c "import yaml; cfg=yaml.safe_load(open('$TEMP_CONFIG')); print(cfg['paths']['projs_path'])")
+# --- Step 2: Forward project phantom ---
 echo ""
-if [ -f "$PROJS_PATH" ]; then
-    echo "[2/4] Projections exist — skipping forward projection."
+if [ "$NOISY" = true ]; then
+    PROJS_CHECK=$(python3 -c "import yaml; cfg=yaml.safe_load(open('$TEMP_CONFIG')); print(cfg['paths']['projs_noisy_path'])")
+    if [ -f "$PROJS_CHECK" ]; then
+        echo "[2/4] Noisy projections exist — skipping generation."
+    else
+        echo "[2/4] Forward projecting phantom (Poisson noise)..."
+        python fake_projection_noisy.py --config "$TEMP_CONFIG"
+    fi
 else
-    echo "[2/4] Forward projecting phantom..."
-    python fake_projection.py --config "$TEMP_CONFIG"
+    PROJS_CHECK=$(python3 -c "import yaml; cfg=yaml.safe_load(open('$TEMP_CONFIG')); print(cfg['paths']['projs_path'])")
+    if [ -f "$PROJS_CHECK" ]; then
+        echo "[2/4] Projections exist — skipping forward projection."
+    else
+        echo "[2/4] Forward projecting phantom (noiseless)..."
+        python fake_projection.py --config "$TEMP_CONFIG"
+    fi
 fi
+
+NOISY_FLAG=""
+[ "$NOISY" = true ] && NOISY_FLAG="--noisy"
 
 # --- Step 3: MAP-TV reconstruction ---
 echo ""
 echo "[3/4] Running MAP-TV reconstruction..."
-python map_tv_recon.py --config "$TEMP_CONFIG"
+python map_tv_recon.py --config "$TEMP_CONFIG" $NOISY_FLAG
 
 # --- Step 4: Visualize result ---
 echo ""
 echo "[4/4] Generating reconstruction plot..."
-python view_npz.py --config "$TEMP_CONFIG"
+python view_npz.py --config "$TEMP_CONFIG" $NOISY_FLAG
 
 echo ""
 echo "=========================================="
