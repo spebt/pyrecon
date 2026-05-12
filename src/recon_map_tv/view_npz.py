@@ -261,6 +261,7 @@ def main():
         ax_cnr.set_ylabel("Mean CNR")
         ax_cnr.legend(fontsize=8)
         ax_cnr.grid(True, linestyle="--", alpha=0.6)
+        ax_cnr.set_box_aspect(1)
     else:
         fig.add_subplot(gs[0, 1]).axis("off")
 
