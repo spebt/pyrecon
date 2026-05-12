@@ -216,30 +216,24 @@ def main():
             print("--noisy set but projs_noisy_path not found — skipping sinogram.")
 
     # ── Figure layout ─────────────────────────────────────────────────────────
-    # Row 0: [final recon (wide) | snapshot strip]
-    # Row 1: [sinogram (full width)]            ← only if noisy file found
-    # Row 2: [CNR vs iteration (full width)]    ← only if CNR was computed
-    n_rows = 1 + (sino is not None) + (cnr_history is not None)
-    fig    = plt.figure(figsize=(14, 7 * n_rows))
-    gs     = fig.add_gridspec(n_rows, 2,
-                              width_ratios=[2, 1],
-                              hspace=0.45, wspace=0.35)
+    # Row 0: [final recon | CNR vs iteration]   — equal square columns
+    # Row 1: [sinogram (full width)]            ← only if --noisy
+    n_rows = 1 + (sino is not None)
+    fig    = plt.figure(figsize=(12, 6 * n_rows))
+    gs     = fig.add_gridspec(n_rows, 2, hspace=0.45, wspace=0.35)
 
-    # Compute a shared vmax from the 99.5th percentile of the final frame.
-    # Using the absolute max causes Poisson noise outliers in noisy reconstructions
-    # to compress the colormap, making the signal appear tiny ("zoomed out").
     vmax_val = args.vmax if args.vmax else float(np.percentile(reconstructions[-1], 99.5))
 
     # ── Left: final reconstruction ────────────────────────────────────────────
-    ax_main = fig.add_subplot(gs[0, 0])
-    im = ax_main.imshow(
+    ax_img = fig.add_subplot(gs[0, 0])
+    im = ax_img.imshow(
         reconstructions[-1].T, cmap="gray_r", extent=img_extent,
         vmin=0, vmax=vmax_val, origin="lower",
     )
-    plt.colorbar(im, ax=ax_main, label="Intensity", fraction=0.046, pad=0.04)
-    ax_main.set_title(f"MAP-TV  —  iter {final_iter}", fontsize=13, fontweight="bold")
-    ax_main.set_xlabel("X (mm)")
-    ax_main.set_ylabel("Y (mm)")
+    plt.colorbar(im, ax=ax_img, label="Intensity", fraction=0.046, pad=0.04)
+    ax_img.set_title(f"MAP-TV  —  iter {final_iter}", fontsize=13, fontweight="bold")
+    ax_img.set_xlabel("X (mm)")
+    ax_img.set_ylabel("Y (mm)")
 
     param_text = (
         f"β = {beta}\n"
@@ -247,38 +241,32 @@ def main():
         f"outer iters = {n_outer}   inner iters = {n_inner}\n"
         f"pixel = {pix_size} mm   img = {w}×{h}"
     )
-    ax_main.text(
+    ax_img.text(
         0.02, 0.02, param_text,
-        transform=ax_main.transAxes,
+        transform=ax_img.transAxes,
         fontsize=8, verticalalignment="bottom",
         bbox=dict(boxstyle="round,pad=0.4", facecolor="white", alpha=0.75),
     )
 
-    # ── Right: snapshot strip (up to 9) ──────────────────────────────────────
-    ax_strip = fig.add_subplot(gs[0, 1])
-    ax_strip.axis("off")
-    n_show   = min(n_saved, 9)
-    indices  = np.linspace(0, n_saved - 1, n_show, dtype=int)
-    cols     = 3
-    rows     = int(np.ceil(n_show / cols))
-
-    for plot_idx, rec_idx in enumerate(indices):
-        strip_pos = ax_strip.get_position()
-        sub_ax = fig.add_axes([
-            strip_pos.x0 + (plot_idx % cols) * strip_pos.width / cols,
-            strip_pos.y0 + (rows - 1 - plot_idx // cols) * strip_pos.height / rows,
-            strip_pos.width / cols * 0.88,
-            strip_pos.height / rows * 0.88,
-        ])
-        sub_ax.imshow(reconstructions[rec_idx].T, cmap="gray_r",
-                      vmin=0, vmax=vmax_val, origin="lower")
-        sub_ax.set_title(f"it {(rec_idx + 1) * save_every}", fontsize=6, pad=2)
-        sub_ax.axis("off")
+    # ── Right: CNR vs iteration ───────────────────────────────────────────────
+    if cnr_history:
+        iters    = [i * save_every for i in range(len(cnr_history))]
+        best_idx = int(np.argmax(cnr_history))
+        ax_cnr   = fig.add_subplot(gs[0, 1])
+        ax_cnr.plot(iters, cnr_history, "b-o", linewidth=2, markersize=4)
+        ax_cnr.axvline(iters[best_idx], color="r", linestyle="--", linewidth=1,
+                       label=f"Peak iter {iters[best_idx]}  (CNR = {cnr_history[best_idx]:.2f})")
+        ax_cnr.set_title(f"CNR vs Iteration  —  β={beta}")
+        ax_cnr.set_xlabel("Iteration (outer)")
+        ax_cnr.set_ylabel("Mean CNR")
+        ax_cnr.legend(fontsize=8)
+        ax_cnr.grid(True, linestyle="--", alpha=0.6)
+    else:
+        fig.add_subplot(gs[0, 1]).axis("off")
 
     # ── Sinogram / noisy projections (row 1, full width) ─────────────────────
-    sino_row = 1
     if sino is not None:
-        ax_sino = fig.add_subplot(gs[sino_row, :])
+        ax_sino   = fig.add_subplot(gs[1, :])
         n_layouts = sino.shape[0]
         if n_layouts == 1:
             ax_sino.plot(sino[0], linewidth=0.8, color="steelblue")
@@ -299,21 +287,6 @@ def main():
                 fontsize=11,
             )
         ax_sino.grid(True, linestyle="--", alpha=0.4)
-
-    # ── CNR vs iteration (bottom row, full width) ─────────────────────────────
-    if cnr_history:
-        iters    = [i * save_every for i in range(len(cnr_history))]
-        best_idx = int(np.argmax(cnr_history))
-        cnr_row  = sino_row + (sino is not None)
-        ax_cnr   = fig.add_subplot(gs[cnr_row, :])
-        ax_cnr.plot(iters, cnr_history, "b-o", linewidth=2, markersize=4)
-        ax_cnr.axvline(iters[best_idx], color="r", linestyle="--", linewidth=1.2,
-                       label=f"Peak iter {iters[best_idx]}  (CNR = {cnr_history[best_idx]:.2f})")
-        ax_cnr.set_title(f"CNR vs Iteration  —  β={beta}", fontsize=11)
-        ax_cnr.set_xlabel("Iteration (outer)")
-        ax_cnr.set_ylabel("Mean CNR")
-        ax_cnr.legend(fontsize=9)
-        ax_cnr.grid(True, linestyle="--", alpha=0.6)
 
     # ── Save ──────────────────────────────────────────────────────────────────
     base    = cfg["paths"]["recon_out_path"].replace(".npz", "")
