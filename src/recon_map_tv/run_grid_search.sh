@@ -46,11 +46,10 @@ BASE_CONFIG="${1:-configs/base_config.yml}"
 # TAUS=(0.2 0.25 0.3 0.5)
 # SIGMAS=(0.2 0.25 0.3 0.2)
 BETAS=(0.002)
-
 N_OUTERS=(300)
-N_INNERS=(80)
-TAUS=(0.3)
-SIGMAS=(0.3)
+N_INNERS=(150)
+TAUS=(0.25)
+SIGMAS=(0.25)
 
 # One noisy run per entry. Remove entries or set to empty array to skip.
 SCALE_FACTORS=()
